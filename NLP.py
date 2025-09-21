@@ -12,12 +12,12 @@ sentence_markup = r' </s>\n<s> \2'
 
 #test
 
-# Tokenize text into words (sequences of letters)
+# Tokenize text into words
 def tokenize(text):
     words = re.findall(r'\p{L}+', text)
     return words
 
-# Remove non-letter characters, except for sentence boundary punctuation
+# Remove non-letter characters
 def clean(text):
   return re.sub(nonletter, ' ', text)
 
@@ -29,69 +29,58 @@ def segment_sentences(text):
     text = re.sub(r'[.;:?!]', '', text)
     return text.lower()
 
-
-
-corpus_cleaned = clean(corpus)
-corpus = segment_sentences(corpus_cleaned)
-
-words = re.findall(r'[\p{L}\p{<>/}]+', corpus)
-
-
-
+# Frequency calculations
 def unigrams(words):
     frequency = {}
-    for i in range(len(words)):
-        if words[i] in frequency:
-            frequency[words[i]] += 1
-        else:
-            frequency[words[i]] = 1
+    for word in words:
+        frequency[word] = frequency.get(word, 0) + 1
     return frequency
 
-frequency = unigrams(words)
 
 def bigrams(words):
-    bigrams = []
-    for i in range(len(words) - 1):
-        bigrams.append((words[i], words[i + 1]))
     frequency_bigrams = {}
     for i in range(len(words) - 1):
-        if bigrams[i] in frequency_bigrams:
-            frequency_bigrams[bigrams[i]] += 1
-        else:
-            frequency_bigrams[bigrams[i]] = 1
+        pair = (words[i], words[i + 1])
+        frequency_bigrams[pair] = frequency_bigrams.get(pair, 0) + 1
     return frequency_bigrams
-
-frequency_bigrams = bigrams(words)
 
 
 def trigrams(words):
-    trigrams = [tuple(words[idx:idx + 3]) for idx in range(len(words) - 2)]
-   
     frequencies = {}
-    for ngram in trigrams:
-        if ngram in frequencies:
-            frequencies[ngram] += 1
-        else:
-            frequencies[ngram] = 1
+    for i in range(len(words) - 2):
+        triple = tuple(words[i:i + 3])
+        frequencies[triple] = frequencies.get(triple, 0) + 1
     return frequencies
 
+#Process the corpus
+corpus_cleaned = clean(corpus)
+corpus = segment_sentences(corpus_cleaned)
+words = re.findall(r'[\p{L}\p{<>/}]+', corpus)
+
+
+#Compute frequencies
+frequency_unigrams = unigrams(words)
+frequency_bigrams = bigrams(words)
 frequency_trigrams = trigrams(words)
 
+
+#User input
 current_input = input("Enter a sentence: ").lower()
 tokens = current_input.split()
 
 
-frequency_trigrams = trigrams(words)
+# Generate candidate next words
 candidates = {}
-
 for (w1, w2, w3), freq in frequency_trigrams.items():
     if w1 == tokens[-2] and w2 == tokens[-1]:
       candidates[w3] = freq
 
+# Sort candidates by frequency and alphabetically
 sorted_candidates = sorted(
     candidates.items(),
     key=lambda tuple: (-tuple[1], tuple[0])
 )
-next_word_predictions = [word for word, _ in sorted_candidates[:cand_nbr]]
 
+
+next_word_predictions = [word for word, _ in sorted_candidates[:cand_nbr]]
 print("Next word predictions: ", next_word_predictions)
