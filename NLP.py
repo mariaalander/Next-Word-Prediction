@@ -69,8 +69,6 @@ for filename in corpora:
 
 
 
-
-print(f"Total words in corpora: {len(all_words)}")
 #Compute frequencies
 frequency_unigrams = unigrams(all_words)
 frequency_bigrams = bigrams(all_words)
