@@ -88,6 +88,18 @@ for (w1, w2, w3), freq in frequency_trigrams.items():
     if w1 == tokens[-2] and w2 == tokens[-1]:
       candidates[w3] = freq
 
+#Backoff to bigrams if empty
+if not candidates and len(tokens) >= 1:
+    w1 = tokens[-1]
+    for (b1, b2), freq in frequency_bigrams.items():
+        if b1 == w1:
+            candidates[b2] = freq
+
+# Backoff to unigrams if still empty
+if not candidates:
+    candidates = frequency_unigrams.copy()
+
+
 # Sort candidates by frequency and alphabetically
 sorted_candidates = sorted(
     candidates.items(),
