@@ -1,16 +1,20 @@
 import regex as re
+import os
 
 cand_nbr = 5  # number of candidate words to suggest
-
-corpus = open('PrideAndPrejudice.txt', encoding='utf8').read()
-
+all_words = []  # list to hold all words in the corpora
 
 # Regular expression patterns
 nonletter = r'[^\p{L}.;:?!]+'
 sentence_boundaries = r'([.;:?!])\s+(\p{Lu})'
 sentence_markup = r' </s>\n<s> \2'
 
-#test
+def get_files(dir, suffix):
+    files = []
+    for file in os.listdir(dir):
+        if file.endswith(suffix):
+            files.append(file)
+    return files
 
 # Tokenize text into words
 def tokenize(text):
@@ -53,15 +57,24 @@ def trigrams(words):
     return frequencies
 
 #Process the corpus
-corpus_cleaned = clean(corpus)
-corpus = segment_sentences(corpus_cleaned)
-words = re.findall(r'[\p{L}\p{<>/}]+', corpus)
+corpora = get_files('corpora', '.txt')
+for filename in corpora:
+    with open(os.path.join('corpora', filename), encoding='utf8') as f:
+        corpus = f.read()
+        corpus_cleaned = clean(corpus)
+        corpus = segment_sentences(corpus_cleaned)
+        words = re.findall(r'[\p{L}\p{<>/}]+', corpus)
+        all_words.extend(words)
+        print(f"Processed {filename}, total words so far: {len(words)}")
 
 
+
+
+print(f"Total words in corpora: {len(all_words)}")
 #Compute frequencies
-frequency_unigrams = unigrams(words)
-frequency_bigrams = bigrams(words)
-frequency_trigrams = trigrams(words)
+frequency_unigrams = unigrams(all_words)
+frequency_bigrams = bigrams(all_words)
+frequency_trigrams = trigrams(all_words)
 
 
 #User input
